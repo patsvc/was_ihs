@@ -885,10 +885,9 @@ resources:
 
             /opt/saltstack/embedded/bin/salt-wrapper.py register dummyUser dummyPass -k $SALT_API_TOKEN
           params:
-            $SALT_API_USER: { get_param: salt_api_user}
-            $SALT_API_PASS: { get_param: salt_api_pass}
             $STACK_ID: { get_param: "OS::stack_id" }
             $SALT_MASTER: { get_param: salt_master_address }
+            $SALT_API_TOKEN: { get_param: salt_api_token }
             
   setup_ssh:
     type: "OS::Heat::SoftwareConfig"
