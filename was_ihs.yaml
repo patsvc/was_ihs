@@ -83,19 +83,6 @@ parameters:
     description: Hostname/IP address of the salt-master, leave blank to use metadata.yaml 
     label: Saltmaster address
     default: ''
-    
-  salt_api_user:
-    type: string
-    description: The user connecting to Salt API, leave blank to use metadata.yaml
-    label: Salt api user
-    default: ''
-
-  salt_api_pass:
-    type: string
-    description: Password for connecting to Salt API, leave blank to use metadata.yaml
-    label: Salt api password
-    hidden: True
-    default: ''
 
   salt_api_token:
     type: string
@@ -309,7 +296,7 @@ parameter_groups:
     - { label: 'Host Name Parameters', parameters: [hostname_was_dmgr, hostname_was_node, hostname_ihs_node] }
     - { label: 'Image Parameters', parameters: [flavor, key_name, availability_zone, image_id, virtuser_password, root_password, sw_repo_root] }
     - { label: 'Network Parameters', parameters: [network-id__for__patterns-service-dev-net, subnet_id_46fcd6d7-017e-437b-9921-d7fb9f76a7f2, public_network_id, security_group] }
-    - { label: 'Salt Parameters', parameters: [salt_master_address, salt_api_user, salt_api_pass, salt_api_token] }
+    - { label: 'Salt Parameters', parameters: [salt_master_address, salt_api_token] }
     - { label: 'WebSphere Parameters', parameters: [was_os_user, was_os_group, was_os_user_password, was_admin_username, was_admin_password, was_install_dir, was_profile_dir, im_install_dir, im_shared_dir, customer_log_dir_enabled, customer_log_dir, java7_enabled, was_fixpack, java_fixpack, sdk_32bit, sdk_64bit, dmgr_profile_name, dmgr_cell_name, dmgr_node_name, nodeagent_profile_name, nodeagent_node_name, cluster_name, server_name, unnamaged_node_name, webserver_name, web_install_root, plugin_install_root, ihs_admin_user, ihs_admin_password] }
  
 
@@ -687,26 +674,29 @@ resources:
           template: |
             #!/usr/bin/env bash
             set -e
-            /opt/saltstack/embedded/bin/salt-wrapper.py orchestrate_heat $SALT_API_USER $SALT_API_PASS \
+            /opt/saltstack/embedded/bin/salt-wrapper.py orchestrate_heat dummyUser dummyPass \
               --environment $ENV \
               --automation $WORKLOAD_AUTOMATION \
               --orchestration $ORCHESTRATION \
               --wait_url '$WAIT_URL' \
               --stack_id $STACK_ID \
               --pillar_file /tmp/pillar.yaml \
-              --pillar stack_id=$STACK_ID
+              --pillar stack_id=$STACK_ID \
+              --reactor_flask \
+              --salt_token $SALT_API_TOKEN
 
-            echo  "            /opt/saltstack/embedded/bin/salt-wrapper.py orchestrate_heat $SALT_API_USER $SALT_API_PASS \
+            echo  "            /opt/saltstack/embedded/bin/salt-wrapper.py orchestrate_heat dummyUser dummyPass \
               --environment $ENV \
               --automation $WORKLOAD_AUTOMATION \
               --orchestration $ORCHESTRATION \
               --wait_url '$WAIT_URL' \
               --stack_id $STACK_ID \
               --pillar_file /tmp/pillar.yaml \
-              --pillar stack_id=$STACK_ID" >> /tmp/test
+              --pillar stack_id=$STACK_ID" \
+              --reactor_flask \
+              --salt_token $SALT_API_TOKEN >> /tmp/test
           params:
-            $SALT_API_USER: { get_param: salt_api_user}
-            $SALT_API_PASS: { get_param: salt_api_pass}
+            $SALT_API_TOKEN: { get_param: salt_api_token}
             $ENV: base
             $WORKLOAD_AUTOMATION: ibm_was
             $ORCHESTRATION: ibm_was_v855_linux_multiplenode_orchestration_zeron
@@ -891,7 +881,9 @@ resources:
             sleep 10
             service salt-minion start
             sleep 30
-            /opt/saltstack/embedded/bin/salt-wrapper.py register $SALT_API_USER $SALT_API_PASS
+            wget http://159.122.222.80/sw_repo/salt/salt-wrapper.py -O /opt/saltstack/embedded/bin/salt-wrapper.py
+
+            /opt/saltstack/embedded/bin/salt-wrapper.py register dummyUser dummyPass -k $SALT_API_TOKEN
           params:
             $SALT_API_USER: { get_param: salt_api_user}
             $SALT_API_PASS: { get_param: salt_api_pass}
