@@ -294,9 +294,9 @@ parameters:
     
 parameter_groups:
     - { label: 'Host Name Parameters', parameters: [hostname_was_dmgr, hostname_was_node, hostname_ihs_node] }
-    - { label: 'Image Parameters', parameters: [flavor, key_name, availability_zone, image_id, virtuser_password, root_password, sw_repo_root] }
+    - { label: 'Image Parameters', parameters: [flavor, key_name, availability_zone, image_id, virtuser_password, root_password] }
     - { label: 'Network Parameters', parameters: [network-id__for__patterns-service-dev-net, subnet_id_46fcd6d7-017e-437b-9921-d7fb9f76a7f2, public_network_id, security_group] }
-    - { label: 'Hidden Parameters', parameters: [salt_master_address, salt_api_token] }
+    - { label: 'Hidden Parameters', parameters: [salt_master_address, salt_api_token, sw_repo_root] }
     - { label: 'WebSphere Parameters', parameters: [was_os_user, was_os_group, was_os_user_password, was_admin_username, was_admin_password, was_install_dir, was_profile_dir, im_install_dir, im_shared_dir, customer_log_dir_enabled, customer_log_dir, java7_enabled, was_fixpack, java_fixpack, sdk_32bit, sdk_64bit, dmgr_profile_name, dmgr_cell_name, dmgr_node_name, nodeagent_profile_name, nodeagent_node_name, cluster_name, server_name, unnamaged_node_name, webserver_name, web_install_root, plugin_install_root, ihs_admin_user, ihs_admin_password] }
  
 
@@ -846,9 +846,11 @@ resources:
             #!/usr/bin/env bash
             set -e
             if [ -f /etc/redhat-release ]; then
-              rpm -Uvh "http://159.122.222.80/sw_repo/salt/saltstack-latest-el$(rpm -qf --qf "%{VERSION}" /etc/redhat-release | cut -c1).x86_64.rpm"
+              #rpm -Uvh "$SW_REPO_ROOTsalt/saltstack-latest-el$(rpm -qf --qf "%{VERSION}" /etc/redhat-release | cut -c1).x86_64.rpm"
+              curl -k "$SW_REPO_ROOTsalt/saltstack-latest-el$(rpm -qf --qf "%{VERSION}" /etc/redhat-release | cut -c1).x86_64.rpm" -o /tmp/salt.rpm >> /tmp/log 2>&1
+              rpm -Uvh /tmp/salt.rpm
             elif [ -f /etc/lsb-release ]; then
-              curl "http://159.122.222.80/sw_repo/salt/saltstack-latest-trusty.x86_64.deb" -O
+              curl -k "$SW_REPO_ROOTsalt/saltstack-latest-trusty.x86_64.deb" -O
               dpkg -i saltstack-latest-trusty.x86_64.deb
               update-rc.d salt-minion start 80 2 3 4 5 .
             fi
@@ -862,7 +864,7 @@ resources:
             echo "token"$token >> /tmp/master
             if [ -z $saltMaster ] ; then
               echo "no master" >> /tmp/master
-              saltMaster=$(curl -s http://159.122.222.80/sw_repo//metadata.yaml | awk '/salt_api_ip/ {print $2}')
+              saltMaster=$(curl -s -k $SW_REPO_ROOTmetadata.yaml | awk '/salt_api_ip/ {print $2}')
             fi
 
             # Default log_level warning            
@@ -881,10 +883,11 @@ resources:
             sleep 10
             service salt-minion start
             sleep 30
-            wget http://159.122.222.80/sw_repo/salt/salt-wrapper.py -O /opt/saltstack/embedded/bin/salt-wrapper.py
+            curl -k $SW_REPO_ROOTsalt/salt-wrapper.py -o /opt/saltstack/embedded/bin/salt-wrapper.py
 
             /opt/saltstack/embedded/bin/salt-wrapper.py register dummyUser dummyPass -k $SALT_API_TOKEN
           params:
+            $SW_REPO_ROOT: {get_param: sw_repo_root }
             $STACK_ID: { get_param: "OS::stack_id" }
             $SALT_MASTER: { get_param: salt_master_address }
             $SALT_API_TOKEN: { get_param: salt_api_token }
