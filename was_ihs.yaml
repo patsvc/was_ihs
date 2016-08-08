@@ -699,7 +699,7 @@ resources:
             $SALT_API_TOKEN: { get_param: salt_api_token}
             $ENV: base
             $WORKLOAD_AUTOMATION: ibm_was
-            $ORCHESTRATION: ibm_was_v855_linux_multiplenode_orchestration_zeron
+            $ORCHESTRATION: ibm_was_v855_linux_multiplenode_orchestration
             $STACK_ID:      { get_param: "OS::stack_id" }
             $WAIT_URL:      { get_resource: wait_handle }
 
