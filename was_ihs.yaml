@@ -847,10 +847,10 @@ resources:
             set -e
             if [ -f /etc/redhat-release ]; then
               #rpm -Uvh "$SW_REPO_ROOTsalt/saltstack-latest-el$(rpm -qf --qf "%{VERSION}" /etc/redhat-release | cut -c1).x86_64.rpm"
-              curl -k "$SW_REPO_ROOTsalt/saltstack-latest-el$(rpm -qf --qf "%{VERSION}" /etc/redhat-release | cut -c1).x86_64.rpm" -o /tmp/salt.rpm >> /tmp/log 2>&1
+              curl -k --retry 5 "$SW_REPO_ROOTsalt/saltstack-latest-el$(rpm -qf --qf "%{VERSION}" /etc/redhat-release | cut -c1).x86_64.rpm" -o /tmp/salt.rpm >> /tmp/log 2>&1
               rpm -Uvh /tmp/salt.rpm
             elif [ -f /etc/lsb-release ]; then
-              curl -k "$SW_REPO_ROOTsalt/saltstack-latest-trusty.x86_64.deb" -O
+              curl -k --retry 5 "$SW_REPO_ROOTsalt/saltstack-latest-trusty.x86_64.deb" -O
               dpkg -i saltstack-latest-trusty.x86_64.deb
               update-rc.d salt-minion start 80 2 3 4 5 .
             fi
@@ -883,7 +883,7 @@ resources:
             sleep 10
             service salt-minion start
             sleep 30
-            curl -k $SW_REPO_ROOTsalt/salt-wrapper.py -o /opt/saltstack/embedded/bin/salt-wrapper.py
+            curl -k --retry 5 $SW_REPO_ROOTsalt/salt-wrapper.py -o /opt/saltstack/embedded/bin/salt-wrapper.py
 
             /opt/saltstack/embedded/bin/salt-wrapper.py register dummyUser dummyPass -k $SALT_API_TOKEN
           params:
