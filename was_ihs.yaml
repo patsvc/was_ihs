@@ -380,7 +380,7 @@ resources:
             $ENV: base
             $WORKLOAD_AUTOMATION: ibm_was
             $ROLES_1: ibm_im_v1x_linux
-            $ROLES_2: ibm_websphere_applicationsvr_v855_linux_dmgr
+            $ROLES_2: ibm_websphere_applicationsvr_v855_linux_dmgr_zeron
             $STACK_ID: { get_param: "OS::stack_id" } 
             
   dmgr_zeron_config:
