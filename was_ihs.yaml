@@ -380,7 +380,7 @@ resources:
             $ENV: base
             $WORKLOAD_AUTOMATION: ibm_was
             $ROLES_1: ibm_im_v1x_linux
-            $ROLES_2: ibm_websphere_applicationsvr_v855_linux_dmgr_zeron
+            $ROLES_2: ibm_websphere_applicationsvr_v855_linux_dmgr
             $STACK_ID: { get_param: "OS::stack_id" } 
             
   dmgr_zeron_config:
@@ -699,7 +699,7 @@ resources:
             $SALT_API_TOKEN: { get_param: salt_api_token}
             $ENV: base
             $WORKLOAD_AUTOMATION: ibm_was
-            $ORCHESTRATION: ibm_was_v855_linux_multiplenode_orchestration
+            $ORCHESTRATION: ibm_was_v855_linux_multiplenode_orchestration_zeron
             $STACK_ID:      { get_param: "OS::stack_id" }
             $WAIT_URL:      { get_resource: wait_handle }
 
