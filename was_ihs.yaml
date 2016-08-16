@@ -74,6 +74,14 @@ parameters:
     label: Software Repository URL
     type: string
 
+  zeron_enabled:
+    type: string
+    description: Life Cycle Management component gets added to each VM which helps provide web user interface to life cycle management of the stack.
+    label: Enable life cycle management
+    default: false
+    constraints:
+    - allowed_values: [true,false]
+
 ############################
 # Salt Specific Parameters
 ############################
@@ -294,7 +302,7 @@ parameters:
     
 parameter_groups:
     - { label: 'Host Name Parameters', parameters: [hostname_was_dmgr, hostname_was_node, hostname_ihs_node] }
-    - { label: 'Image Parameters', parameters: [flavor, key_name, availability_zone, image_id, virtuser_password, root_password] }
+    - { label: 'Image Parameters', parameters: [flavor, key_name, availability_zone, image_id, virtuser_password, root_password, zeron_enabled] }
     - { label: 'Network Parameters', parameters: [network-id__for__patterns-service-dev-net, subnet_id_46fcd6d7-017e-437b-9921-d7fb9f76a7f2, public_network_id, security_group] }
     - { label: 'Hidden Parameters', parameters: [salt_master_address, salt_api_token, sw_repo_root] }
     - { label: 'WebSphere Parameters', parameters: [was_os_user, was_os_group, was_os_user_password, was_admin_username, was_admin_password, was_install_dir, was_profile_dir, im_install_dir, im_shared_dir, customer_log_dir_enabled, customer_log_dir, java7_enabled, was_fixpack, java_fixpack, sdk_32bit, sdk_64bit, dmgr_profile_name, dmgr_cell_name, dmgr_node_name, nodeagent_profile_name, nodeagent_node_name, cluster_name, server_name, unnamaged_node_name, webserver_name, web_install_root, plugin_install_root, ihs_admin_user, ihs_admin_password] }
@@ -470,6 +478,11 @@ resources:
             roles:
               - $ROLES_1
               - $ROLES_2
+            EOF
+            if [ "$ZERON" == true ]; then
+              echo "  - zeron" >> /etc/salt/grains
+            fi
+            cat >> /etc/salt/grains << EOF
             stack:
               $STACK_ID
             EOF
@@ -482,6 +495,7 @@ resources:
             $WORKLOAD_AUTOMATION: ibm_was
             $ROLES_1: ibm_im_v1x_linux
             $ROLES_2: ibm_websphere_applicationsvr_v855_linux_node
+            $ZERON: { get_param: zeron_enabled}
             $STACK_ID: { get_param: "OS::stack_id" }
             
   create_pillar_file:
