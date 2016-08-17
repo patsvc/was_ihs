@@ -377,6 +377,11 @@ resources:
             roles:
               - $ROLES_1
               - $ROLES_2
+            EOF
+            if [ "$ZERON" == true ]; then
+              echo "  - zeron" >> /etc/salt/grains
+            fi
+            cat >> /etc/salt/grains << EOF
             stack:
               $STACK_ID
             EOF
@@ -389,6 +394,7 @@ resources:
             $WORKLOAD_AUTOMATION: ibm_was
             $ROLES_1: ibm_im_v1x_linux
             $ROLES_2: ibm_websphere_applicationsvr_v855_linux_dmgr
+            $ZERON: { get_param: zeron_enabled}
             $STACK_ID: { get_param: "OS::stack_id" } 
             
   dmgr_zeron_config:
@@ -801,6 +807,11 @@ resources:
             roles:
               - $ROLES_1
               - $ROLES_2
+            EOF
+            if [ "$ZERON" == true ]; then
+              echo "  - zeron" >> /etc/salt/grains
+            fi
+            cat >> /etc/salt/grains << EOF
             stack:
               $STACK_ID
             EOF
@@ -813,6 +824,7 @@ resources:
             $WORKLOAD_AUTOMATION: ibm_was
             $ROLES_1: ibm_im_v1x_linux
             $ROLES_2: ibm_ihs_v855_linux
+            $ZERON: { get_param: zeron_enabled}
             $STACK_ID: { get_param: "OS::stack_id" }
             
   ihs_zeron_config:
